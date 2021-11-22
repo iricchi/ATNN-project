@@ -18,3 +18,7 @@ Advanced Topics in Network Neuroscience project.
 3. Keeping in mind the communites from Structure, we can compute FC dinamically (e.g. sliding windows) and see how graph metrics (TBD) change in time in task or Resting State
 
 
+### Installing dependencies
+To run the code, you might want to satisfy the requirements of the requirements.txt file. To do so, simply run pip install -r requirements.txt
+
+

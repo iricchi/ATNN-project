@@ -7,11 +7,9 @@ Advanced Topics in Network Neuroscience project.
   - M_vec_task.mat is the same concept but in a vector format and numbers as labels
   - sub1_Motor.mat is the data aquired from sub1 during this task (AAL parcellation so 90 brain regions)
   - sub1_RS.mat is the Resting state - always same parcellation 
-  - sub1_SC.mat is the corresponding SC of that subject ( * ).
+  - sub1_SC.mat is the corresponding SC of that subject
 
-( * ) Note: The structural and diffusion-weighted MRI data of each subject were downloaded from the HCP and were processed using MRtrix3 (http://www.mrtrix.org/). We used single shell (b=3000) multi-tissue to estimate the response function, while fiber orientation distribution functions were computed using constrained spherical deconvolution of order 8. Tractogram generation was performed using deterministic tractography with about 2x10^7 output streamlines, and was seeded from the white matter. Fiber densities were used as metric to define the individual SCs and were computed by dividing the total number of fibers that connect each of the pairwise regions of the AAL atlas with both the mean fiber length and the average of the sizes of the two regions considered.
-
-- Each of us may have a specific folder if we want to write our own scripts
+- Each of us has a specific folder if we want to write our own scripts
 - common_scripts is going to be the main folder with shared scripts :)
 
 ### Keypoints

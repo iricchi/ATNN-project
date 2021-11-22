@@ -2,6 +2,9 @@
 Advanced Topics in Network Neuroscience project.
 
 ## Description
+- Data contains our data
+- Each of us has a specific folder if we want to write our own scripts
+- common_scripts is going to be the main folder with shared scripts :)
 
 ### Keypoints
 1. Considering healthy subjects (for now only data available already preprocessed), we can focus on subject specific (eg. 1 subject)

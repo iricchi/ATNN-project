@@ -36,6 +36,9 @@ def compute_degree(G, standardize=True, weighted=True):
         for n in nodes:
             for neighbor in G[n]:
                 degrees[i] += G[n][neighbor]['weight']
+                # A self loop means we must add the degree a second time
+                if neighbor == n:
+                    degrees[i] += G[neighbor][n]['weight']
             i += 1
     else:
         nodes, degrees = zip(*list(G.degree))

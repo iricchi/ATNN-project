@@ -1,7 +1,8 @@
 from unittest import TestCase
-from src.graph_measures import create_communities_from_partition
+from src.graph_measures import create_communities_from_partition, compute_degree
 import networkx as nx
 import numpy as np
+
 
 class CreateCommunity(TestCase):
     def check_graphs_equal(self, g1, g2):
@@ -133,3 +134,67 @@ class CreateCommunity(TestCase):
         self.check_graphs_equal(subgraphs[2], expected_subgraph_3)
 
 
+class Test(TestCase):
+    def test_compute_degree_returns_nodes_of_graph_correctly_without_stand_without_weight(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=False, weighted=False)
+        self.assertListEqual(list(nodes), list(G.nodes))
+
+    def test_compute_degree_returns_nodes_of_graph_correctly_without_stand_with_weight(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=False, weighted=True)
+        self.assertListEqual(list(nodes), list(G.nodes))
+
+    def test_compute_degree_returns_nodes_of_graph_correctly_with_stand_without_weight(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=True, weighted=False)
+        self.assertListEqual(list(nodes), list(G.nodes))
+
+    def test_compute_degree_returns_nodes_of_graph_correctly_with_stand_with_weight(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=True, weighted=True)
+        self.assertListEqual(list(nodes), list(G.nodes))
+
+    def test_self_loop_means_degree_of_two(self):
+        adjacency_matrix = np.asarray([[1]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=False, weighted=False)
+        expected_degrees = [2]
+        self.assertListEqual(list(degrees), expected_degrees)
+
+    def test_compute_degree_returns_degrees_without_stand_without_weight(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=False, weighted=False)
+        expected_degrees = [2, 3, 4, 1]
+        self.assertListEqual(list(degrees), expected_degrees)
+
+
+    def test_compute_degree_returns_weighted_degrees_without_stand_with_weight(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=False, weighted=True)
+        expected_degrees = [2, 3, 4, 1]
+        self.assertListEqual(list(degrees), expected_degrees)

@@ -135,7 +135,7 @@ class CreateCommunity(TestCase):
         self.check_graphs_equal(subgraphs[2], expected_subgraph_3)
 
 
-class Test(TestCase):
+class DegreeComputationTest(TestCase):
     def test_compute_degree_returns_nodes_of_graph_correctly_without_stand_without_weight(self):
         adjacency_matrix = np.asarray([[0, 1, 1, 0],
                                        [1, 0, 1, 1],

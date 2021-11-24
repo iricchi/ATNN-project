@@ -71,13 +71,15 @@ def compute_participation_coefficient(G, weighted, partition_values):
             neighbours = G[n_i]
             for neighbour in neighbours:
                 if partition_values[neighbour] == u:
+                    # This handles the self looping case, which counts as twice in the degrees
+                    factor= 2.0 if n_i == neighbour else 1.0
                     if weighted:
-                        degrees[n_i, c_i] += neighbours[neighbour]['weight']
+                        degrees[n_i, c_i] += (neighbours[neighbour]['weight']*factor)
                     else:
-                        degrees[n_i, c_i] += 1
+                        degrees[n_i, c_i] += 1*factor
     norm_factor = 1. / degrees.sum(axis=1)
     s = (norm_factor.reshape((-1, 1)) * degrees) ** 2
-    return 1 - s.sum(axis=1)
+    return 1. - s.sum(axis=1)
     # return degrees
 
 

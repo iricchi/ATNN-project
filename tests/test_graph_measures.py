@@ -1,7 +1,8 @@
 from unittest import TestCase
-from src.graph_measures import create_communities_from_partition, compute_degree
 import networkx as nx
 import numpy as np
+from src.graph_measures import create_communities_from_partition, compute_degree, compute_participation_coefficient
+
 
 
 class CreateCommunity(TestCase):
@@ -212,9 +213,67 @@ class Test(TestCase):
         adjacency_matrix = np.asarray([[0, 10, 20.0, 0],
                                        [10, 0, -4.3, 7.8],
                                        [20, -4.3, 21.6, 0],
-                                       [0, 7.8, 0, 0]])
+                                       [0, 0, 0, 0]])
         G = nx.from_numpy_array(adjacency_matrix)
         nodes, degrees = compute_degree(G, standardize=True, weighted=True)
         expected_degrees = np.asarray([30, 13.5, 58.9, 7.8])
-        expected_degrees = (expected_degrees-expected_degrees.mean())/expected_degrees.std()
+        expected_degrees = (expected_degrees - expected_degrees.mean()) / expected_degrees.std()
         self.assertListEqual(list(degrees), list(expected_degrees))
+
+
+class ParticipationCoefficientTest(TestCase):
+    def test_compute_participation_coefficient(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 2, 1, 2])
+        # We know the closed form formula of participation coefficient:
+        expected_pc = [1.0 - (1/2.)**2 - (1/2.)**2, 1.0 - (1/3.)**2 - (2/3.)**2, 1.0 - (1/4.)**2 - (3/4.)**2, 0.0]
+        pc = compute_participation_coefficient(G, False, partition_values=partition)
+        self.assertListEqual(list(pc), expected_pc)
+
+    def test_participation_coefficient_identical_weighted_unweighted_when_adjacency_is_binary(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 0],
+                                       [1, 0, 1, 1],
+                                       [1, 1, 1, 0],
+                                       [0, 1, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 2, 1, 2])
+        # We know the closed form formula of participation coefficient:
+        pc = compute_participation_coefficient(G, False, partition_values=partition)
+        pc_2 = compute_participation_coefficient(G, True, partition_values=partition)
+        self.assertListEqual(list(pc), list(pc_2))
+
+
+    def test_participation_coefficient_correct_with_self_loops_weighted_adjacency(self):
+        adjacency_matrix = np.asarray([[0, 10, -4, 0],
+                                       [10, 0, 31, -4],
+                                       [-4, 31, 3, 0],
+                                       [0, -4, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 2, 1, 2])
+        # We know the closed form formula of participation coefficient:
+        expected_pc = np.asarray([1.- (10./6)**2 - (-4/6.)**2, 1. - (41/(10+31-4))**2 - (-4/(10.+31-4))**2, 1. - (2./33)**2 - (31/33.)**2, 0.0])
+        pc = compute_participation_coefficient(G, True, partition_values=partition)
+
+        # Of course we're dealing with floating point numbers, so we can't test exact equality
+        self.assertTrue(np.all(np.abs(pc-expected_pc) < 10e-8))
+
+    def test_participation_coefficient_with_three_communities_no_self_loop(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 1, 0, 0],
+                                       [1, 0, 1, 0, 0, 0],
+                                       [1, 1, 0, 1, 0, 0],
+                                       [1, 0, 1, 0, 1, 1],
+                                       [0, 0, 0, 1, 0, 1],
+                                       [0, 0, 0, 1, 1, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 1, 1, 2, 2, 3])
+        # We know the closed form formula of participation coefficient:
+        expected_pc = np.asarray(
+            [1. - (2. / 3) ** 2 - (1 / 3.) ** 2, 0, 1. - (2/3)**2 - (1/3)**2, 1. - (1/4)**2 - (2/4)**2 - (1/4)**2, 1. - (1/2)**2 - (1/2)**2, 0])
+        pc = compute_participation_coefficient(G, True, partition_values=partition)
+
+        # Of course we're dealing with floating point numbers, so we can't test exact equality
+        self.assertTrue(np.all(np.abs(pc - expected_pc) < 10e-8))

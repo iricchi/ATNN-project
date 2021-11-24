@@ -1,7 +1,8 @@
 from unittest import TestCase
 import networkx as nx
 import numpy as np
-from src.graph_measures import create_communities_from_partition, compute_degree, compute_participation_coefficient, compute_system_segregation
+from src.graph_measures import create_communities_from_partition, compute_degree, compute_participation_coefficient, \
+    compute_system_segregation, compute_within_degree
 
 
 class CreateCommunity(TestCase):
@@ -295,9 +296,9 @@ class SystemSegregationTest(TestCase):
         # System segregation is a single value.
         # It is equal to mean strength of edges between nodes of same network minus mean strength of edges spanning
         # two networks, divided by the former.
-        mean_strength_within_net = 1.0 # All weights are 1 here
-        mean_strength_across_net = 1.0 # All weights are 1 here
-        expected_seg = (mean_strength_within_net - mean_strength_across_net)/mean_strength_within_net
+        mean_strength_within_net = 1.0  # All weights are 1 here
+        mean_strength_across_net = 1.0  # All weights are 1 here
+        expected_seg = (mean_strength_within_net - mean_strength_across_net) / mean_strength_within_net
         seg = compute_system_segregation(G, partition)
         self.assertEqual(expected_seg, seg)
 
@@ -314,8 +315,35 @@ class SystemSegregationTest(TestCase):
         # System segregation is a single value.
         # It is equal to mean strength of edges between nodes of same network minus mean strength of edges spanning
         # two networks, divided by the former.
-        mean_strength_within_net = (0.5+3-2+21)/4
-        mean_strength_across_net = (4+1+1-5)/4.
-        expected_seg = (mean_strength_within_net - mean_strength_across_net)/mean_strength_within_net
+        mean_strength_within_net = (0.5 + 3 - 2 + 21) / 4
+        mean_strength_across_net = (4 + 1 + 1 - 5) / 4.
+        expected_seg = (mean_strength_within_net - mean_strength_across_net) / mean_strength_within_net
         seg = compute_system_segregation(G, partition)
         self.assertEqual(expected_seg, seg)
+
+
+class WithinDegreeTest(TestCase):
+    def standardize(self, x):
+        return (x - x.mean())/x.std()
+
+    def test_compute_within_degree(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 1, 0, 0],
+                                       [1, 0, 0, 0, 0, 0],
+                                       [1, 0, 0, 1, 0, 0],
+                                       [1, 0, 1, 0, 1, 1],
+                                       [0, 0, 0, 1, 0, 1],
+                                       [0, 0, 0, 1, 1, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 1, 1, 2, 2, 3])
+        modules = create_communities_from_partition(G, partition)
+
+        # The expected values can be classified in two types.
+        # For the first community, we will perform normal standardization
+        # For the other two, since they have the same degrees, the standard deviation is undefined.
+        # Our convention in this case is that within-module degree is zero, since it measures deviation from mean.
+        community_1_degrees = np.asarray([2, 1, 1])
+        community_1_within = self.standardize(community_1_degrees)
+
+        expected_within_degrees = np.hstack((community_1_within, [0,0], [0]))
+        within_degrees = compute_within_degree(modules)
+        self.assertListEqual(list(expected_within_degrees), list(within_degrees))

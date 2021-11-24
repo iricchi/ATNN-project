@@ -47,7 +47,11 @@ def compute_degree(G, standardize=True, weighted=True):
 
     degrees = np.asarray(degrees)
     if standardize:
-        degrees = (degrees - degrees.mean()) / degrees.std()
+        std = degrees.std()
+        if std > 10e-8:
+            degrees = (degrees - degrees.mean()) / degrees.std()
+        else:
+            degrees = (degrees - degrees.mean())
     return nodes, degrees
 
 
@@ -109,3 +113,24 @@ def compute_system_segregation(G, partition_values):
     between_net_strength /= between_net_count
     within_net_strength /= within_net_count
     return (within_net_strength - between_net_strength) / within_net_strength
+
+
+def compute_within_degree(modules):
+    # First, compute the within degree for each node (standardized and weighted)
+    module_degrees = [compute_degree(module, standardize=True, weighted=True) for module in modules]
+
+    # Then, flatten the results as a single array
+    nodes_tpm, within_degrees_tmp = zip(*module_degrees)
+    nodes = []
+    for e in nodes_tpm:
+        if len(e)>1:
+            nodes.extend(e)
+        else:
+            nodes.append(e[0])
+    within_degrees = reduce(lambda x, y: np.hstack((x, y)), within_degrees_tmp)
+
+    # Simply put back the degrees in order of nodes, so that within_degree[i] corresponds to ith node in the graph
+    within_degrees = within_degrees[np.argsort(nodes)]
+
+    return within_degrees
+

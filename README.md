@@ -9,7 +9,6 @@ Advanced Topics in Network Neuroscience project.
   - sub1_RS.mat is the Resting state - always same parcellation 
   - sub1_SC.mat is the corresponding SC of that subject
 
-- Each of us has a specific folder if we want to write our own scripts
 - common_scripts is going to be the main folder with shared scripts :)
 
 ### Keypoints

@@ -22,6 +22,8 @@ def compute_degree(G, standardize=True, weighted=True):
     If weighted degree is requested, the degree will then be defined as the sum of weighted edges, for each node.
     If z-scoring is requested, the function will standardize the returned degrees.
 
+    Self loops are counted twice in degree computation.
+
     :param G: input graph. Degree will be computed for each node within this graph
     :param standardize: Whether degrees should be standardized before being returned. (Default = True)
     :param weighted: Computes weighted degree instead of regular degree. If the graph is unweighted, this parameter is ignored. (Default = True)

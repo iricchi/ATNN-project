@@ -188,7 +188,6 @@ class Test(TestCase):
         expected_degrees = [2, 3, 4, 1]
         self.assertListEqual(list(degrees), expected_degrees)
 
-
     def test_compute_degree_returns_weighted_degrees_without_stand_with_weight(self):
         adjacency_matrix = np.asarray([[0, 1, 1, 0],
                                        [1, 0, 1, 1],
@@ -198,3 +197,24 @@ class Test(TestCase):
         nodes, degrees = compute_degree(G, standardize=False, weighted=True)
         expected_degrees = [2, 3, 4, 1]
         self.assertListEqual(list(degrees), expected_degrees)
+
+    def test_compute_degree_returns_weighted_degrees_weighted_adjacency_matrix_without_stand(self):
+        adjacency_matrix = np.asarray([[0, 10, 20.0, 0],
+                                       [10, 0, -4.3, 7.8],
+                                       [20, -4.3, 21.6, 0],
+                                       [0, 7.8, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=False, weighted=True)
+        expected_degrees = [30, 13.5, 58.9, 7.8]
+        self.assertListEqual(list(degrees), expected_degrees)
+
+    def test_compute_degree_standardized_returns_expected_results(self):
+        adjacency_matrix = np.asarray([[0, 10, 20.0, 0],
+                                       [10, 0, -4.3, 7.8],
+                                       [20, -4.3, 21.6, 0],
+                                       [0, 7.8, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        nodes, degrees = compute_degree(G, standardize=True, weighted=True)
+        expected_degrees = np.asarray([30, 13.5, 58.9, 7.8])
+        expected_degrees = (expected_degrees-expected_degrees.mean())/expected_degrees.std()
+        self.assertListEqual(list(degrees), list(expected_degrees))

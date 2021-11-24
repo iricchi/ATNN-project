@@ -1,8 +1,7 @@
 from unittest import TestCase
 import networkx as nx
 import numpy as np
-from src.graph_measures import create_communities_from_partition, compute_degree, compute_participation_coefficient
-
+from src.graph_measures import create_communities_from_partition, compute_degree, compute_participation_coefficient, compute_system_segregation
 
 
 class CreateCommunity(TestCase):
@@ -230,7 +229,8 @@ class ParticipationCoefficientTest(TestCase):
         G = nx.from_numpy_array(adjacency_matrix)
         partition = np.asarray([1, 2, 1, 2])
         # We know the closed form formula of participation coefficient:
-        expected_pc = [1.0 - (1/2.)**2 - (1/2.)**2, 1.0 - (1/3.)**2 - (2/3.)**2, 1.0 - (1/4.)**2 - (3/4.)**2, 0.0]
+        expected_pc = [1.0 - (1 / 2.) ** 2 - (1 / 2.) ** 2, 1.0 - (1 / 3.) ** 2 - (2 / 3.) ** 2,
+                       1.0 - (1 / 4.) ** 2 - (3 / 4.) ** 2, 0.0]
         pc = compute_participation_coefficient(G, False, partition_values=partition)
         self.assertListEqual(list(pc), expected_pc)
 
@@ -246,7 +246,6 @@ class ParticipationCoefficientTest(TestCase):
         pc_2 = compute_participation_coefficient(G, True, partition_values=partition)
         self.assertListEqual(list(pc), list(pc_2))
 
-
     def test_participation_coefficient_correct_with_self_loops_weighted_adjacency(self):
         adjacency_matrix = np.asarray([[0, 10, -4, 0],
                                        [10, 0, 31, -4],
@@ -255,11 +254,13 @@ class ParticipationCoefficientTest(TestCase):
         G = nx.from_numpy_array(adjacency_matrix)
         partition = np.asarray([1, 2, 1, 2])
         # We know the closed form formula of participation coefficient:
-        expected_pc = np.asarray([1.- (10./6)**2 - (-4/6.)**2, 1. - (41/(10+31-4))**2 - (-4/(10.+31-4))**2, 1. - (2./33)**2 - (31/33.)**2, 0.0])
+        expected_pc = np.asarray(
+            [1. - (10. / 6) ** 2 - (-4 / 6.) ** 2, 1. - (41 / (10 + 31 - 4)) ** 2 - (-4 / (10. + 31 - 4)) ** 2,
+             1. - (2. / 33) ** 2 - (31 / 33.) ** 2, 0.0])
         pc = compute_participation_coefficient(G, True, partition_values=partition)
 
         # Of course we're dealing with floating point numbers, so we can't test exact equality
-        self.assertTrue(np.all(np.abs(pc-expected_pc) < 10e-8))
+        self.assertTrue(np.all(np.abs(pc - expected_pc) < 10e-8))
 
     def test_participation_coefficient_with_three_communities_no_self_loop(self):
         adjacency_matrix = np.asarray([[0, 1, 1, 1, 0, 0],
@@ -272,8 +273,49 @@ class ParticipationCoefficientTest(TestCase):
         partition = np.asarray([1, 1, 1, 2, 2, 3])
         # We know the closed form formula of participation coefficient:
         expected_pc = np.asarray(
-            [1. - (2. / 3) ** 2 - (1 / 3.) ** 2, 0, 1. - (2/3)**2 - (1/3)**2, 1. - (1/4)**2 - (2/4)**2 - (1/4)**2, 1. - (1/2)**2 - (1/2)**2, 0])
+            [1. - (2. / 3) ** 2 - (1 / 3.) ** 2, 0, 1. - (2 / 3) ** 2 - (1 / 3) ** 2,
+             1. - (1 / 4) ** 2 - (2 / 4) ** 2 - (1 / 4) ** 2, 1. - (1 / 2) ** 2 - (1 / 2) ** 2, 0])
         pc = compute_participation_coefficient(G, True, partition_values=partition)
 
         # Of course we're dealing with floating point numbers, so we can't test exact equality
         self.assertTrue(np.all(np.abs(pc - expected_pc) < 10e-8))
+
+
+class SystemSegregationTest(TestCase):
+    def test_compute_system_segregation(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 1, 0, 0],
+                                       [1, 0, 1, 0, 0, 0],
+                                       [1, 1, 0, 1, 0, 0],
+                                       [1, 0, 1, 0, 1, 1],
+                                       [0, 0, 0, 1, 0, 1],
+                                       [0, 0, 0, 1, 1, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 1, 1, 2, 2, 3])
+
+        # System segregation is a single value.
+        # It is equal to mean strength of edges between nodes of same network minus mean strength of edges spanning
+        # two networks, divided by the former.
+        mean_strength_within_net = 1.0 # All weights are 1 here
+        mean_strength_across_net = 1.0 # All weights are 1 here
+        expected_seg = (mean_strength_within_net - mean_strength_across_net)/mean_strength_within_net
+        seg = compute_system_segregation(G, partition)
+        self.assertEqual(expected_seg, seg)
+
+    def test_compute_system_segregation_weighted(self):
+        adjacency_matrix = np.asarray([[0, 0.5, 3, 4, 0, 0],
+                                       [0.5, 0, -2, 0, 0, 0],
+                                       [3, -2, 0, 1, 0, 0],
+                                       [4, 0, 1, 0, 21, -5],
+                                       [0, 0, 0, 21, 0, 1],
+                                       [0, 0, 0, -5, 1, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 1, 1, 2, 2, 3])
+
+        # System segregation is a single value.
+        # It is equal to mean strength of edges between nodes of same network minus mean strength of edges spanning
+        # two networks, divided by the former.
+        mean_strength_within_net = (0.5+3-2+21)/4
+        mean_strength_across_net = (4+1+1-5)/4.
+        expected_seg = (mean_strength_within_net - mean_strength_across_net)/mean_strength_within_net
+        seg = compute_system_segregation(G, partition)
+        self.assertEqual(expected_seg, seg)

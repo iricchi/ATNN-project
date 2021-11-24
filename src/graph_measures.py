@@ -88,26 +88,24 @@ def compute_system_segregation(G, partition_values):
     System segregation is defined as:
     (mean(connections within same community) - mean(connections not part of same community))/mean(connection within same community)
     """
-    # First, compute all communities
-    subgraphs = create_communities_from_partition(G, partition_values)
+    within_net_count = 0
+    within_net_strength = 0
+    between_net_count = 0
+    between_net_strength = 0
 
-    # Next for all communities, compute the within weighted degree values
-    degree_values = [compute_degree(subgraph, standardize=False, weighted=True)[1] for subgraph in subgraphs]
-
-    # Now we must fuse all these together
-    degree_values = reduce(lambda x, y: np.hstack((x, y)), degree_values)
-
-    mean_same_community_weight = degree_values.mean()
-
-    # Now, we can worry about node pairs, ie: edges!
-    edges = list(G.edges)
-    count = 0
-    mean_diff_community_weight = 0
-    for e in edges:
+    for e in list(G.edges):
         n1, n2 = e[0], e[1]
-        if partition_values[n1] != partition_values[n2]:
-            count += 1
-            mean_diff_community_weight += G[n1][n2]['weight']
-    mean_diff_community_weight /= count
-    # return mean_same_community_weight
-    return (mean_same_community_weight - mean_diff_community_weight) / mean_same_community_weight
+        s = G[n1][n2]['weight']
+        if n1 == n2:
+            within_net_count += 2
+            within_net_strength += 2*s
+        else:
+            if partition_values[n1] == partition_values[n2]:
+                within_net_count += 1
+                within_net_strength += s
+            else:
+                between_net_count += 1
+                between_net_strength += s
+    between_net_strength /= between_net_count
+    within_net_strength /= within_net_count
+    return (within_net_strength - between_net_strength) / within_net_strength

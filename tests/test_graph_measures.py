@@ -281,6 +281,24 @@ class ParticipationCoefficientTest(TestCase):
         # Of course we're dealing with floating point numbers, so we can't test exact equality
         self.assertTrue(np.all(np.abs(pc - expected_pc) < 10e-8))
 
+    def test_participation_coefficient_of_disconnected_nodes_is_zero(self):
+        adjacency_matrix = np.asarray([[0, 1, 1, 1, 0, 0],
+                                       [1, 0, 1, 0, 0, 0],
+                                       [1, 1, 0, 1, 0, 0],
+                                       [1, 0, 1, 0, 0, 0],
+                                       [0, 0, 0, 0, 0, 0],
+                                       [0, 0, 0, 0, 0, 0]])
+        G = nx.from_numpy_array(adjacency_matrix)
+        partition = np.asarray([1, 1, 1, 2, 2, 3])
+        # We know the closed form formula of participation coefficient:
+        expected_pc = np.asarray(
+            [1. - (2. / 3) ** 2 - (1 / 3.) ** 2, 0, 1. - (2 / 3) ** 2 - (1 / 3) ** 2,
+             0, 0, 0])
+        pc = compute_participation_coefficient(G, True, partition_values=partition)
+
+        # Of course we're dealing with floating point numbers, so we can't test exact equality
+        self.assertTrue(np.all(np.abs(pc - expected_pc) < 10e-8))
+
 
 class SystemSegregationTest(TestCase):
     def test_compute_system_segregation(self):

@@ -81,11 +81,15 @@ def compute_participation_coefficient(G, weighted, partition_values):
                         degrees[n_i, c_i] += (neighbours[neighbour]['weight']*factor)
                     else:
                         degrees[n_i, c_i] += 1*factor
-    norm_factor = 1. / degrees.sum(axis=1)
+    total_degrees= degrees.sum(axis=1)
+    disconnected_nodes = total_degrees == 0
+    total_degrees[disconnected_nodes] = 1
+    norm_factor = 1. / total_degrees
     s = (norm_factor.reshape((-1, 1)) * degrees) ** 2
-    return 1. - s.sum(axis=1)
-    # return degrees
-
+    # Places where the degrees where zero will be mapped to zero
+    pc = 1. - s.sum(axis=1)
+    pc[disconnected_nodes] = 0
+    return pc
 
 def compute_system_segregation(G, partition_values):
     """

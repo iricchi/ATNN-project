@@ -3,3 +3,4 @@ src/.ipynb_checkpoints*
 .idea/*
 src/__pycache__/
 src/*.save
+Results/*

@@ -2,7 +2,7 @@ from unittest import TestCase
 import networkx as nx
 import numpy as np
 from src.graph_measures import create_communities_from_partition, compute_degree, compute_participation_coefficient, \
-    compute_system_segregation, compute_within_degree
+    compute_system_segregation, compute_within_degree, compute_hub_score
 
 
 class CreateCommunity(TestCase):
@@ -342,7 +342,7 @@ class SystemSegregationTest(TestCase):
 
 class WithinDegreeTest(TestCase):
     def standardize(self, x):
-        return (x - x.mean())/x.std()
+        return (x - x.mean()) / x.std()
 
     def test_compute_within_degree(self):
         adjacency_matrix = np.asarray([[0, 1, 1, 1, 0, 0],
@@ -362,6 +362,35 @@ class WithinDegreeTest(TestCase):
         community_1_degrees = np.asarray([2, 1, 1])
         community_1_within = self.standardize(community_1_degrees)
 
-        expected_within_degrees = np.hstack((community_1_within, [0,0], [0]))
+        expected_within_degrees = np.hstack((community_1_within, [0, 0], [0]))
         within_degrees = compute_within_degree(modules)
         self.assertListEqual(list(expected_within_degrees), list(within_degrees))
+
+
+class HubScoreTest(TestCase):
+    def test_compute_hub_score(self):
+        integration_scores = np.asarray([1, 2, 4, 2.5, 1.4, -4])
+        segregation_scores = np.asarray([10, 2, 4, 5, -2, 30])
+
+        # If we sort, integration is [4,2,0,1,3,5] (high integration > best rank of 0)
+        # segregation is [4,1,2,3,0,5] (low segregation > best rank of 0)
+        # So total sum would be [8, 3, 2, 4, 3, 10]
+        # And the score itself would be 1 - (10-this sum)/10
+        expected_score = 1.0 - (10-np.asarray([8, 3, 2, 4, 3, 10]))/10.
+
+        actual_score = compute_hub_score(integration_node_list=integration_scores, segregation_node_list=segregation_scores)
+        self.assertTrue(np.all(np.abs(expected_score-actual_score)<10e-8))
+
+    def test_compute_hub_with_ties_in_integration_values(self):
+        # here the ranks should be in case of equality given in the order they appear in
+        integration_scores = np.asarray([0, 0, 4, -1, 0, 10])
+        segregation_scores = np.asarray([10, 2, 4, 5, -2, 30])
+
+        # If we sort, integration is [2,2,1,5,2,0] (high integration > best rank of 0 and in case of equality all nodes take the same value)
+        # segregation is [4,1,2,3,0,5] (low segregation > best rank of 0)
+        expected_score = 1.0 - (10 - np.asarray([6, 3, 3, 8, 2, 5])) / 10.
+
+        actual_score = compute_hub_score(integration_node_list=integration_scores,
+                                         segregation_node_list=segregation_scores)
+
+        self.assertTrue(np.all(np.abs(expected_score - actual_score) < 10e-8))

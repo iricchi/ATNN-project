@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 from functools import reduce
+from scipy.stats import rankdata
 
 
 def create_communities_from_partition(G, partition):
@@ -81,11 +82,15 @@ def compute_participation_coefficient(G, weighted, partition_values):
                         degrees[n_i, c_i] += (neighbours[neighbour]['weight']*factor)
                     else:
                         degrees[n_i, c_i] += 1*factor
-    norm_factor = 1. / degrees.sum(axis=1)
+    total_degrees= degrees.sum(axis=1)
+    disconnected_nodes = total_degrees == 0
+    total_degrees[disconnected_nodes] = 1
+    norm_factor = 1. / total_degrees
     s = (norm_factor.reshape((-1, 1)) * degrees) ** 2
-    return 1. - s.sum(axis=1)
-    # return degrees
-
+    # Places where the degrees where zero will be mapped to zero
+    pc = 1. - s.sum(axis=1)
+    pc[disconnected_nodes] = 0
+    return pc
 
 def compute_system_segregation(G, partition_values):
     """
@@ -134,3 +139,24 @@ def compute_within_degree(modules):
 
     return within_degrees
 
+
+def get_ranking(v):
+    ordered_indices = np.argsort(np.argsort(v))
+    c=np.bincount(v)
+    return (np.cumsum(np.concatenate(([0.0], c))))[ordered_indices]
+
+
+def compute_hub_score(integration_node_list, segregation_node_list):
+    # high integration should be first rank (0) so we need reverse order
+    integration_ranking = rankdata(-integration_node_list, method='min') - 1
+    # low segregation should be first rank (0) so this order is correct
+    segregation_ranking = rankdata(segregation_node_list, method='min') - 1
+
+    rank_val = integration_ranking + segregation_ranking
+    # Now scale the score between 0 (highest rank) and 1 (lowest rank):
+    n_nodes = integration_node_list.shape[0]
+    max_rank = (n_nodes-1) * 2
+    rank_val = (max_rank - rank_val) / max_rank
+
+    # Finally, we want the highest value to be highest rank and lowest value to be lowest rank
+    return 1.0 - rank_val

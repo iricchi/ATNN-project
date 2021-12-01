@@ -159,4 +159,4 @@ def compute_hub_score(integration_node_list, segregation_node_list):
     rank_val = (max_rank - rank_val) / max_rank
 
     # Finally, we want the highest value to be highest rank and lowest value to be lowest rank
-    return 1.0 - rank_val
+    return rank_val

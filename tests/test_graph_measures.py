@@ -368,6 +368,21 @@ class WithinDegreeTest(TestCase):
 
 
 class HubScoreTest(TestCase):
+    def test_compute_hub_score_some_values(self):
+        integration_scores = np.asarray([1, 2, 4, 2.5, 1.4, -4])
+        segregation_scores = np.asarray([-3, -2, -0.4, 4.2, 10., 2])
+
+        # 3 2 0.4 -4.2 -10 -2
+        # If we sort, integration is [4,2,0,1,3,5] (high integration > best rank of 0)
+        # segregation is [0,1,2,4,5,3] (low segregation > best rank of 0)
+        # So total sum would be [4, 3, 2, 5, 8, 8]
+        # And the score itself would be 1 - (10-this sum)/10
+        expected_score =  (10 - np.asarray([4, 3, 2, 5, 8, 8])) / 10.
+
+        actual_score = compute_hub_score(integration_node_list=integration_scores,
+                                         segregation_node_list=segregation_scores)
+        self.assertTrue(np.all(np.abs(expected_score - actual_score) < 10e-8))
+
     def test_compute_hub_score(self):
         integration_scores = np.asarray([1, 2, 4, 2.5, 1.4, -4])
         segregation_scores = np.asarray([10, 2, 4, 5, -2, 30])
@@ -376,7 +391,7 @@ class HubScoreTest(TestCase):
         # segregation is [4,1,2,3,0,5] (low segregation > best rank of 0)
         # So total sum would be [8, 3, 2, 4, 3, 10]
         # And the score itself would be 1 - (10-this sum)/10
-        expected_score = 1.0 - (10-np.asarray([8, 3, 2, 4, 3, 10]))/10.
+        expected_score = (10-np.asarray([8, 3, 2, 4, 3, 10]))/10.
 
         actual_score = compute_hub_score(integration_node_list=integration_scores, segregation_node_list=segregation_scores)
         self.assertTrue(np.all(np.abs(expected_score-actual_score)<10e-8))
@@ -388,7 +403,7 @@ class HubScoreTest(TestCase):
 
         # If we sort, integration is [2,2,1,5,2,0] (high integration > best rank of 0 and in case of equality all nodes take the same value)
         # segregation is [4,1,2,3,0,5] (low segregation > best rank of 0)
-        expected_score = 1.0 - (10 - np.asarray([6, 3, 3, 8, 2, 5])) / 10.
+        expected_score = (10 - np.asarray([6, 3, 3, 8, 2, 5])) / 10.
 
         actual_score = compute_hub_score(integration_node_list=integration_scores,
                                          segregation_node_list=segregation_scores)

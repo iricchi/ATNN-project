@@ -1,0 +1,26 @@
+Presentation Outline:
+
+1/ Intro:
+    - Modularity is useful to characterize topology of a graph
+    - but results are highly dependent on community definition
+    - We want to investigate the impact of using different communities in the analysis of a fMRI with motor tasks
+    - Specifically, look at communities extracted from Louvain on FC, SC
+
+2/ Dataset:
+    - Show FC, experimental paradigm, SC
+
+3/ Community detection
+    - show the strategies
+   
+4/ Our definition of hubbiness
+
+5/ Fig1A and B: big matrix (90xtime) of variation of hubbiness over time
+Fig2 difference between partitions in CV (scatter plot of CV of hubbiness FP vs SP)
+
+6/ One way ANOVA on the hubbinness for both partitions
+
+7/ Visualization of best regions 
+
+8/ Classification using selected features to predict the task
+
+9/ Conclusion

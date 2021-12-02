@@ -36,6 +36,17 @@ def sliding_window_corr(x, window_length, window_stride, window_function):
     return correlations
 
 def load_ground_truth(task, path_parent = './Data'):
+    """
+    Load experimental paradigm of a specific task 
+    Inputs:
+        - task : must be a string inital of what type of task (M = motor, W = working memory, E= emotion...)
+        
+    Outputs:
+        - exp_par will give the experimental paradigm loaded
+        - task_dic is a dictionary of labels and names (descriptions) of the task epochs
+    """
+    assert type(task) == str 
+    assert len(task) == 1
     
     exp_par = loadmat(os.path.join(path_parent, '%s_vec_task.mat' % task))['%s_vec_task' % task]
     exp_par_names = loadmat('Data/%s_task_names.mat' % task)['task_names']

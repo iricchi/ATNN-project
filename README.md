@@ -20,4 +20,7 @@ Advanced Topics in Network Neuroscience project.
 ### Installing dependencies
 To run the code, you might want to satisfy the requirements of the requirements.txt file. To do so, simply run pip install -r requirements.txt
 
+## Shared Presentation:
+https://docs.google.com/presentation/d/1MZOrf7tpy4ZNF3u7WxCRElFfdeosJFEZQ7AyEDFBXJE/edit?usp=sharing
+
 

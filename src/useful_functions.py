@@ -3,6 +3,7 @@ import numpy as np
 from scipy.io import loadmat
 from more_itertools import consecutive_groups
 
+
 def pearsonr(x):
     """
     Simply computes correlation between all pairs of lines in X.
@@ -10,6 +11,7 @@ def pearsonr(x):
     If X is in observations x variables it should be transposed before being passed to this function!
     """
     return np.corrcoef(x, rowvar=True)
+
 
 def sliding_window_corr(x, window_length, window_stride, window_function):
     """
@@ -35,6 +37,7 @@ def sliding_window_corr(x, window_length, window_stride, window_function):
         correlations[i]=pearsonr(x[center-half_window:center+half_window].T*window_f)
     return correlations
 
+
 def load_ground_truth(task, path_parent = './Data'):
     """
     Load experimental paradigm of a specific task 
@@ -59,6 +62,7 @@ def load_ground_truth(task, path_parent = './Data'):
     task_dic = dict(zip(np.unique(exp_par), names_task))
     
     return exp_par, task_dic 
+
 
 def extract_limits(exp_par, cur_label, task_dic, thr=5):
     """
@@ -90,6 +94,7 @@ def extract_limits(exp_par, cur_label, task_dic, thr=5):
             w_inds.append((l[0],l[-1]))
             
     return dict(zip(w_inds, len(w_inds)*[task_dic[cur_label]]))
+
 
 def condition_window_corr(x, task='M'):
     """
